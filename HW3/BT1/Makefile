@@ -16,12 +16,3 @@ $(TARGET): $(OBJECTS)
 
 clean:
 	rm -f $(OBJECTS) $(TARGET)
-
-# Tên file nén: HotenSV_MSSV_HW4.zip
-# Sửa HOVATEN và MSSV trước khi chạy `make zip`
-HOVATEN = HotenSV
-MSSV = 12345678
-ZIP_NAME = $(HOVATEN)_$(MSSV)_HW4.zip
-
-zip: clean
-	zip -9 $(ZIP_NAME) $(SOURCES) Makefile
