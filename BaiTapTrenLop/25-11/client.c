@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     }
     
     printf("Connected to server %s:%d\n", server_ip, port);
-    printf("Enter message to send (or 'quit' to exit): ");
+    printf("Enter message to send: ");
     
     /* Đọc dữ liệu từ người dùng và gửi tới server */
     if (fgets(buffer, BUFFER_SIZE, stdin) != NULL) {

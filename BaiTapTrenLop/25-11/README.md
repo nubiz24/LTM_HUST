@@ -1,6 +1,6 @@
-# TCP Socket Application với pthread
+# TCP Socket Application với pthread()
 
-Ứng dụng TCP socket sử dụng `pthread` (POSIX threads) để hỗ trợ nhận thông tin từ nhiều người dùng đồng thời.
+Ứng dụng TCP socket sử dụng `pthread()` để hỗ trợ nhận thông tin từ nhiều người dùng đồng thời.
 
 ## Yêu cầu
 
@@ -37,9 +37,8 @@ Ví dụ:
 
 Server sẽ:
 - Lắng nghe trên cổng được chỉ định
-- Sử dụng `pthread` để tạo thread mới cho mỗi client kết nối
-- Sử dụng mutex để đồng bộ hóa việc ghi file, đảm bảo thread-safe
-- Ghi dữ liệu nhận được vào file `user.txt` với format: `User: Nội dung`
+- Sử dụng `pthread()` để xử lý nhiều client đồng thời
+- Ghi dữ liệu nhận được vào file `user.txt` với format: `User : Nội dung`
 
 ### Client
 
@@ -78,30 +77,11 @@ Client sẽ:
 # Nhập: Hello from client 2
 ```
 
-4. Terminal 4 - Chạy client 3:
-```bash
-./client 127.0.0.1 5500
-# Nhập: Hello from client 3
+4. Kiểm tra file `user.txt`:
 ```
-
-5. Kiểm tra file `user.txt`:
+User : Hello from client 1
+User : Hello from client 2
 ```
-User: Hello from client 1
-User: Hello from client 2
-User: Hello from client 3
-```
-
-## So sánh với fork()
-
-### Ưu điểm của pthread:
-- **Hiệu quả hơn**: Thread chia sẻ không gian bộ nhớ, không cần copy toàn bộ process
-- **Nhanh hơn**: Tạo thread nhanh hơn tạo process
-- **Tiết kiệm tài nguyên**: Sử dụng ít bộ nhớ hơn so với fork()
-- **Dễ chia sẻ dữ liệu**: Các thread có thể chia sẻ biến toàn cục (với mutex để đồng bộ)
-
-### Nhược điểm:
-- **Cần đồng bộ hóa**: Phải sử dụng mutex/semaphore để tránh race condition
-- **Một thread lỗi có thể ảnh hưởng toàn bộ**: Nếu một thread crash, có thể ảnh hưởng đến process chính
 
 ## Dọn dẹp
 
@@ -110,4 +90,10 @@ Xóa các file đã biên dịch và file user.txt:
 ```bash
 make clean
 ```
+
+## Khác biệt với fork()
+
+- Sử dụng thread thay vì process, tiết kiệm tài nguyên hơn
+- Sử dụng mutex để đồng bộ hóa việc ghi file giữa các thread
+- Thread được detach tự động để giải phóng tài nguyên khi kết thúc
 

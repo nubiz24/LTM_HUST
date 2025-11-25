@@ -10,9 +10,9 @@
 #define BUFFER_SIZE 1024
 
 /* Mutex để đồng bộ hóa việc ghi file */
-static pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t file_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Cấu trúc để truyền tham số cho thread */
+/* Cấu trúc để truyền dữ liệu vào thread */
 typedef struct {
     int client_sock;
     struct sockaddr_in client_addr;
@@ -36,19 +36,24 @@ void* handle_client(void* arg) {
         newline = strchr(buffer, '\r');
         if (newline) *newline = '\0';
         
-        /* Khóa mutex trước khi ghi file */
+        /* Sử dụng mutex để đồng bộ hóa việc ghi file */
         pthread_mutex_lock(&file_mutex);
         
         /* Mở file user.txt để ghi (append mode) */
         fp = fopen("user.txt", "a");
-        if (fp != NULL) {
-            /* Ghi vào file với format "User: Nội dung" */
-            fprintf(fp, "User: %s\n", buffer);
-            fflush(fp);
-            fclose(fp);
+        if (fp == NULL) {
+            perror("fopen");
+            pthread_mutex_unlock(&file_mutex);
+            close(client_sock);
+            free(client_info);
+            return NULL;
         }
         
-        /* Mở khóa mutex sau khi ghi file */
+        /* Ghi vào file với format "User : Nội dung" */
+        fprintf(fp, "User : %s\n", buffer);
+        fflush(fp);
+        fclose(fp);
+        
         pthread_mutex_unlock(&file_mutex);
         
         printf("Received from client %s:%d: %s\n", 
@@ -58,8 +63,8 @@ void* handle_client(void* arg) {
     }
     
     close(client_sock);
-    free(client_info); /* Giải phóng bộ nhớ */
-    pthread_exit(NULL);
+    free(client_info);
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
@@ -73,7 +78,6 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
     pthread_t thread_id;
-    client_info_t* client_info;
     
     /* Tạo socket */
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -121,14 +125,13 @@ int main(int argc, char *argv[]) {
         printf("Client connected from %s:%d\n", 
                inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
         
-        /* Cấp phát bộ nhớ cho thông tin client */
-        client_info = (client_info_t*)malloc(sizeof(client_info_t));
+        /* Tạo cấu trúc thông tin client */
+        client_info_t* client_info = (client_info_t*)malloc(sizeof(client_info_t));
         if (client_info == NULL) {
             perror("malloc");
             close(client_sock);
             continue;
         }
-        
         client_info->client_sock = client_sock;
         client_info->client_addr = client_addr;
         
@@ -140,7 +143,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
         
-        /* Tách thread để nó tự giải phóng tài nguyên khi kết thúc */
+        /* Detach thread để tự động giải phóng tài nguyên khi kết thúc */
         pthread_detach(thread_id);
     }
     
