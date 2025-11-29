@@ -1,0 +1,5 @@
+user1 password1 0
+user2 password2 1
+user3 password3 1
+admin admin123 1
+test test123 1
