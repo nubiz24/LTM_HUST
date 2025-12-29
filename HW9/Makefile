@@ -1,0 +1,25 @@
+CC = gcc
+CFLAGS = -O2 -Wall -Wextra -std=c11
+TARGET_SERVER = server
+TARGET_CLIENT = client
+SOURCES_SERVER = server.c
+SOURCES_CLIENT = client.c
+OBJECTS_SERVER = $(SOURCES_SERVER:.c=.o)
+OBJECTS_CLIENT = $(SOURCES_CLIENT:.c=.o)
+
+.PHONY: all clean
+
+all: $(TARGET_SERVER) $(TARGET_CLIENT)
+
+$(TARGET_SERVER): $(OBJECTS_SERVER)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(TARGET_CLIENT): $(OBJECTS_CLIENT)
+	$(CC) $(CFLAGS) -o $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJECTS_SERVER) $(OBJECTS_CLIENT) $(TARGET_SERVER) $(TARGET_CLIENT)
+
